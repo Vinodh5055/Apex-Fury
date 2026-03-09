@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apex Fury – ESP32 Gateway</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════ LOGIN PAGE ═══════════════════════════════════════ -->
+<div id="login-page" class="active">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" opacity="0.9"/>
+          <rect x="13.5" y="3" width="7.5" height="4.5" rx="1.5" fill="white" opacity="0.9"/>
+          <rect x="13.5" y="10.5" width="7.5" height="7.5" rx="1.5" fill="white" opacity="0.9"/>
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="login-app-name">Apex Fury</div>
+      <div class="login-subtitle">ESP32 Gateway</div>
+      <div class="login-device">Device Login</div>
+    </div>
+    <div id="login-auth-error" class="login-auth-error hidden">Invalid Machine ID or Password</div>
+    <div class="login-form">
+      <div class="login-field">
+        <label class="login-field-label">Machine ID</label>
+        <div class="login-input-wrap" id="machine-id-wrap">
+          <input type="text" id="machine-id-input" placeholder="Enter Machine ID" autocomplete="username" />
+        </div>
+        <div class="login-error hidden" id="machine-id-error">Machine ID is required</div>
+      </div>
+      <div class="login-field">
+        <label class="login-field-label">Password</label>
+        <div class="login-input-wrap" id="password-wrap">
+          <input type="password" id="password-input" placeholder="Enter password" autocomplete="current-password" />
+          <button class="login-eye" id="toggle-password" type="button" aria-label="Show password">
+            <svg id="eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="login-error hidden" id="password-error">Password is required</div>
+      </div>
+      <button class="btn-login" id="login-btn" type="button">
+        <span id="login-btn-text">Login</span>
+      </button>
+    </div>
+    <div class="login-footer">Use your device credentials to log in</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MAIN APP ════════════════════════════════════════ -->
+<div id="app" style="display:none">
+  <!-- Mobile drawer backdrop -->
+  <div id="drawer-backdrop"></div>
+
+  <!-- Mobile Drawer -->
+  <div id="drawer">
+    <div class="sidebar-brand">Apex Fury</div>
+    <div class="sidebar-nav">
+      <div class="sidebar-items" id="drawer-nav"></div>
+    </div>
+  </div>
+
+  <!-- Desktop Sidebar -->
+  <div id="sidebar-desktop">
+    <div class="sidebar-brand">Apex Fury</div>
+    <div class="sidebar-nav">
+      <div class="sidebar-items" id="sidebar-nav-desktop"></div>
+      <div class="sidebar-version">V2.4.1</div>
+    </div>
+  </div>
+
+  <!-- Tablet Sidebar (icon only) -->
+  <div id="sidebar-tablet" class="sidebar-collapsed">
+    <div class="sidebar-brand"></div>
+    <div class="sidebar-nav">
+      <div class="sidebar-items" id="sidebar-nav-tablet"></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+    <!-- TopBar -->
+    <div id="topbar">
+      <div class="topbar-left">
+        <button id="menu-btn" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <path d="M3 6h18M3 12h18M3 18h18" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div>
+          <div class="topbar-device-name">ESP32 Gateway</div>
+          <div class="topbar-device-id">Device ID: ESP32-001</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <!-- WiFi -->
+        <div class="topbar-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <!-- 4G -->
+        <div class="topbar-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <rect x="1"  y="14" width="3" height="6" rx="0.5" fill="#16A34A"/>
+            <rect x="6"  y="11" width="3" height="9" rx="0.5" fill="#16A34A"/>
+            <rect x="11" y="8"  width="3" height="12" rx="0.5" fill="#16A34A"/>
+            <rect x="16" y="5"  width="3" height="15" rx="0.5" fill="#16A34A"/>
+            <path d="M20 3h4v4" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <!-- Cloud (desktop only) -->
+        <div class="topbar-icon topbar-cloud" style="cursor:pointer" id="cloud-status-btn">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <!-- Reboot (desktop) -->
+        <div class="topbar-reboot" id="topbar-reboot-btn">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+            <path d="M13.65 2.35A7.958 7.958 0 0 0 8 0C3.58 0 0 3.58 0 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A6.007 6.007 0 0 1 8 14c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L10 6h6V0l-2.35 2.35z" fill="#DC2626"/>
+          </svg>
+          Reboot
+        </div>
+        <!-- Overflow menu (mobile/tablet) -->
+        <div class="overflow-menu-wrap">
+          <button id="overflow-btn" aria-label="More actions">
+            <svg viewBox="0 0 4 18" height="18" width="4" fill="currentColor">
+              <circle cx="2" cy="2" r="2"/><circle cx="2" cy="9" r="2"/><circle cx="2" cy="16" r="2"/>
+            </svg>
+          </button>
+          <div id="overflow-dropdown" class="overflow-dropdown">
+            <button class="overflow-item" id="overflow-cloud">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Cloud Status
+            </button>
+            <div class="overflow-divider"></div>
+            <button class="overflow-item danger" id="overflow-reboot">
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="none">
+                <path d="M13.65 2.35A7.958 7.958 0 0 0 8 0C3.58 0 0 3.58 0 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A6.007 6.007 0 0 1 8 14c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L10 6h6V0l-2.35 2.35z" fill="#DC2626"/>
+              </svg>
+              Reboot Device
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pages -->
+    <div id="pages">
+
+      <!-- ── Dashboard ──────────────────────────────────────────────────────── -->
+      <div id="page-Dashboard" class="page active">
+        <div class="page-title">Dashboard</div>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">CONNECTIVITY</div>
+            <div class="dashboard-rows">
+              <div class="metric-row"><span class="metric-label">Active Interface</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">4G LTE</span></div></div>
+              <div class="metric-row"><span class="metric-label">Signals</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">-67 dBm</span></div></div>
+              <div class="metric-row"><span class="metric-label">IP</span><div class="metric-value-wrap"><span class="metric-value">10.0.1.42</span></div></div>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">Cloud</div>
+            <div class="dashboard-rows">
+              <div class="metric-row"><span class="metric-label">MQTT</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">Connected</span></div></div>
+              <div class="metric-row"><span class="metric-label">Last Publish</span><div class="metric-value-wrap"><span class="metric-value">2s ago</span></div></div>
+              <div class="metric-row"><span class="metric-label">Pending Sync</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">0 Records</span></div></div>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">STORAGE</div>
+            <div class="dashboard-rows">
+              <div class="metric-row"><span class="metric-label">SD</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">Mounted</span></div></div>
+              <div class="metric-row"><span class="metric-label">Used</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">34%</span></div></div>
+              <div class="metric-row"><span class="metric-label">Total</span><div class="metric-value-wrap"><span class="metric-value">14.8 GB</span></div></div>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">SYSTEM</div>
+            <div class="dashboard-rows">
+              <div class="metric-row"><span class="metric-label">Uptime</span><div class="metric-value-wrap"><span class="metric-value">4d 12h 33m</span></div></div>
+              <div class="metric-row"><span class="metric-label">CPU</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">23%</span></div></div>
+              <div class="metric-row"><span class="metric-label">Free RAM</span><div class="metric-value-wrap"><div class="metric-dot"></div><span class="metric-value">142 KB</span></div></div>
+              <div class="metric-row"><span class="metric-label">Last Sync</span><div class="metric-value-wrap"><span class="metric-value">2s ago</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Network ────────────────────────────────────────────────────────── -->
+      <div id="page-Network" class="page">
+        <div class="page-title">Network</div>
+
+        <!-- WiFi Section -->
+        <div class="section" id="net-wifi-section">
+          <div class="section-header" data-section="net-wifi">
+            <span class="section-title">WIFI</span>
+            <div class="section-header-right">
+              <div class="toggle on" id="wifi-toggle"><div class="toggle-knob"></div></div>
+              <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body open" id="net-wifi-body">
+            <div class="section-divider"></div>
+            <div id="wifi-content" class="gap-12">
+              <!-- Current SSID -->
+              <div class="input-row">
+                <span class="input-label" style="width:100px">SSID</span>
+                <div style="flex:1;background:#1a1a1a;border:1px solid #262629;border-radius:4px;height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 12px">
+                  <span style="font-size:12px;color:#a2a0a9">Factorywifi-5G</span>
+                  <span style="font-size:12px;color:#2563eb">Connected</span>
+                </div>
+              </div>
+              <!-- WiFi table -->
+              <div class="wifi-table-wrap">
+                <div class="wifi-table-header-row">
+                  <span class="wifi-table-title">Available Networks</span>
+                  <button class="btn-scan" id="wifi-scan-btn">Scan</button>
+                </div>
+                <div class="wifi-table-scroll">
+                  <table class="wifi-table" id="wifi-network-table">
+                    <thead><tr><th>SSID</th><th>Signal</th><th>SECURITY</th></tr></thead>
+                    <tbody>
+                      <tr data-ssid="FactoryWiFi-5G"><td>FactoryWiFi-5G</td><td>-45 dBm</td><td><div class="wifi-security"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M4.45 16.32c-.41 0-.76-.15-1.05-.44C3.11 15.6 2.97 15.25 2.97 14.84V7.42c0-.41.14-.76.43-1.05.29-.29.64-.44 1.05-.44h.74V4.45c0-1.03.36-1.9 1.08-2.63C7 1.1 7.88.74 8.9.74c1.03 0 1.9.36 2.63 1.08.72.73 1.08 1.6 1.08 2.63v1.49h.74c.41 0 .76.15 1.05.44.29.29.44.64.44 1.05v7.42c0 .41-.15.76-.44 1.05-.29.29-.64.44-1.05.44H4.45zm5.5-4.15c.29-.29.44-.64.44-1.05 0-.41-.15-.76-.44-1.05-.29-.29-.64-.44-1.05-.44-.41 0-.76.15-1.05.44-.29.29-.44.64-.44 1.05 0 .41.15.76.44 1.05.29.29.64.44 1.05.44.41 0 .76-.15 1.05-.44zM6.68 5.94h4.45V4.45c0-.62-.22-1.15-.65-1.58-.43-.43-.95-.65-1.58-.65-.62 0-1.15.22-1.58.65-.43.43-.65.96-.65 1.58v1.49z" fill="#F1F5F9"/></svg><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M2.02 7.96 .45 6.38a11.2 11.2 0 0 1 3.9-2.53A11.2 11.2 0 0 1 8.9 2.97c1.58 0 3.1.29 4.57.88 1.46.59 2.76 1.43 3.9 2.53l-1.58 1.58a9.6 9.6 0 0 0-2.79-1.76A8.8 8.8 0 0 0 8.9 5.19a8.8 8.8 0 0 0-3.1.55 9.6 9.6 0 0 0-2.78 1.77L2.02 7.96zm3.13 3.13-1.56-1.56A7.3 7.3 0 0 1 5.63 8 7.3 7.3 0 0 1 8.9 7.42c1.03 0 1.97.19 2.85.56.88.37 1.66.9 2.36 1.57l-1.56 1.56a5.5 5.5 0 0 0-1.68-.97 5.5 5.5 0 0 0-1.97-.37c-.7 0-1.38.13-2.01.37-.63.24-1.21.58-1.72 1.04l-.1-.05zm2.7 3.31a1.5 1.5 0 0 1-.44-1.05c0-.41.15-.76.44-1.05.29-.29.64-.44 1.05-.44.41 0 .76.15 1.05.44.29.29.44.64.44 1.05 0 .41-.15.76-.44 1.05-.29.29-.64.44-1.05.44-.41 0-.76-.15-1.05-.44z" fill="#F1F5F9"/></svg></div></td></tr>
+                      <tr data-ssid="Office-Network"><td>Office-Network</td><td>-45 dBm</td><td><div class="wifi-security"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M4.45 16.32c-.41 0-.76-.15-1.05-.44C3.11 15.6 2.97 15.25 2.97 14.84V7.42c0-.41.14-.76.43-1.05.29-.29.64-.44 1.05-.44h.74V4.45c0-1.03.36-1.9 1.08-2.63C7 1.1 7.88.74 8.9.74c1.03 0 1.9.36 2.63 1.08.72.73 1.08 1.6 1.08 2.63v1.49h.74c.41 0 .76.15 1.05.44.29.29.44.64.44 1.05v7.42c0 .41-.15.76-.44 1.05-.29.29-.64.44-1.05.44H4.45zm5.5-4.15c.29-.29.44-.64.44-1.05 0-.41-.15-.76-.44-1.05-.29-.29-.64-.44-1.05-.44-.41 0-.76.15-1.05.44-.29.29-.44.64-.44 1.05 0 .41.15.76.44 1.05.29.29.64.44 1.05.44.41 0 .76-.15 1.05-.44zM6.68 5.94h4.45V4.45c0-.62-.22-1.15-.65-1.58-.43-.43-.95-.65-1.58-.65-.62 0-1.15.22-1.58.65-.43.43-.65.96-.65 1.58v1.49z" fill="#F1F5F9"/></svg><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M2.02 7.96 .45 6.38a11.2 11.2 0 0 1 3.9-2.53A11.2 11.2 0 0 1 8.9 2.97c1.58 0 3.1.29 4.57.88 1.46.59 2.76 1.43 3.9 2.53l-1.58 1.58a9.6 9.6 0 0 0-2.79-1.76A8.8 8.8 0 0 0 8.9 5.19a8.8 8.8 0 0 0-3.1.55 9.6 9.6 0 0 0-2.78 1.77L2.02 7.96zm3.13 3.13-1.56-1.56A7.3 7.3 0 0 1 5.63 8 7.3 7.3 0 0 1 8.9 7.42c1.03 0 1.97.19 2.85.56.88.37 1.66.9 2.36 1.57l-1.56 1.56a5.5 5.5 0 0 0-1.68-.97 5.5 5.5 0 0 0-1.97-.37c-.7 0-1.38.13-2.01.37-.63.24-1.21.58-1.72 1.04l-.1-.05zm2.7 3.31a1.5 1.5 0 0 1-.44-1.05c0-.41.15-.76.44-1.05.29-.29.64-.44 1.05-.44.41 0 .76.15 1.05.44.29.29.44.64.44 1.05 0 .41-.15.76-.44 1.05-.29.29-.64.44-1.05.44-.41 0-.76-.15-1.05-.44z" fill="#F1F5F9"/></svg></div></td></tr>
+                      <tr data-ssid="Guest WIFI"><td>Guest WIFI</td><td>-45 dBm</td><td><div class="wifi-security"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M2.02 7.96 .45 6.38a11.2 11.2 0 0 1 3.9-2.53A11.2 11.2 0 0 1 8.9 2.97c1.58 0 3.1.29 4.57.88 1.46.59 2.76 1.43 3.9 2.53l-1.58 1.58a9.6 9.6 0 0 0-2.79-1.76A8.8 8.8 0 0 0 8.9 5.19a8.8 8.8 0 0 0-3.1.55 9.6 9.6 0 0 0-2.78 1.77L2.02 7.96zm3.13 3.13-1.56-1.56A7.3 7.3 0 0 1 5.63 8 7.3 7.3 0 0 1 8.9 7.42c1.03 0 1.97.19 2.85.56.88.37 1.66.9 2.36 1.57l-1.56 1.56a5.5 5.5 0 0 0-1.68-.97 5.5 5.5 0 0 0-1.97-.37c-.7 0-1.38.13-2.01.37-.63.24-1.21.58-1.72 1.04l-.1-.05zm2.7 3.31a1.5 1.5 0 0 1-.44-1.05c0-.41.15-.76.44-1.05.29-.29.64-.44 1.05-.44.41 0 .76.15 1.05.44.29.29.44.64.44 1.05 0 .41-.15.76-.44 1.05-.29.29-.64.44-1.05.44-.41 0-.76-.15-1.05-.44z" fill="#F1F5F9"/></svg></div></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cellular Section -->
+        <div class="section">
+          <div class="section-header" data-section="net-cellular">
+            <span class="section-title">Cellular</span>
+            <div class="section-header-right">
+              <div class="toggle on" id="cellular-toggle"><div class="toggle-knob"></div></div>
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body" id="net-cellular-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div class="input-row"><span class="input-label" style="width:100px">APN</span><div class="input-wrap"><input type="text" id="cellular-apn" value="Internet"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:100px">User</span><div class="input-wrap"><input type="text" id="cellular-user" value="Optional"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:100px">Password</span><div class="input-wrap"><input type="password" id="cellular-password" value="Internet"/></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ethernet Section -->
+        <div class="section">
+          <div class="section-header" data-section="net-ethernet">
+            <span class="section-title">Ethernet (Static)</span>
+            <div class="section-header-right">
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body" id="net-ethernet-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div class="input-row"><span class="input-label" style="width:100px">IP</span><div class="input-wrap" id="eth-ip-wrap"><input type="text" id="eth-ip" value="192.168.1.100"/></div></div>
+              <div class="text-sm-red hidden" id="eth-ip-err" style="padding-left:124px">Invalid IP address</div>
+              <div class="input-row"><span class="input-label" style="width:100px">Subnet Mask</span><div class="input-wrap" id="eth-subnet-wrap"><input type="text" id="eth-subnet" value="255.255.255.0"/></div></div>
+              <div class="text-sm-red hidden" id="eth-subnet-err" style="padding-left:124px">Invalid subnet mask</div>
+              <div class="input-row"><span class="input-label" style="width:100px">Gateway</span><div class="input-wrap" id="eth-gw-wrap"><input type="text" id="eth-gw" value="192.168.1.1"/></div></div>
+              <div class="text-sm-red hidden" id="eth-gw-err" style="padding-left:124px">Invalid gateway address</div>
+              <div class="input-row"><span class="input-label" style="width:100px">DNS</span><div class="input-wrap" id="eth-dns-wrap"><input type="text" id="eth-dns" value="8.8.8.8"/></div></div>
+              <div class="text-sm-red hidden" id="eth-dns-err" style="padding-left:124px">Invalid DNS address</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Priority Section -->
+        <div class="section">
+          <div class="section-header" data-section="net-priority">
+            <span class="section-title">Priority</span>
+            <div class="section-header-right">
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body" id="net-priority-body">
+            <div class="section-divider"></div>
+            <div class="input-row">
+              <span class="input-label" style="width:100px">Priority</span>
+              <div class="select-wrap">
+                <select id="net-priority-select">
+                  <option value="4g-wifi">4G → WIFI</option>
+                  <option value="wifi-4g">WiFi → 4G</option>
+                  <option value="ethernet-wifi">Ethernet → WiFi</option>
+                </select>
+                <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-btns" id="net-form-btns">
+          <div class="form-btns-row">
+            <button class="btn-reset" id="net-reset-btn">Reset to Default</button>
+            <button class="btn-save" id="net-save-btn">Save Configuration</button>
+          </div>
+          <div class="save-banner hidden" id="net-save-banner">Configuration saved successfully</div>
+        </div>
+      </div>
+
+      <!-- ── MQTT ───────────────────────────────────────────────────────────── -->
+      <div id="page-MQTT" class="page">
+        <div class="page-title">MQTT</div>
+        <div class="section">
+          <div class="section-header" data-section="mqtt-cfg">
+            <span class="section-title">MQTT Configuration</span>
+            <div class="section-header-right">
+              <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body open" id="mqtt-cfg-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div class="toggle-row" id="mqtt-enable-row">
+                <span class="toggle-row-label">Enable Live</span>
+                <div class="toggle-sm on" id="mqtt-enable-toggle"><div class="toggle-sm-knob"></div></div>
+              </div>
+              <div class="input-row"><span class="input-label" style="width:100px">Host</span><div class="input-wrap" id="mqtt-host-wrap"><input type="text" id="mqtt-host" value="broker.example.com"/></div></div>
+              <div class="text-sm-red hidden" id="mqtt-host-err" style="padding-left:124px"></div>
+              <div class="input-row"><span class="input-label" style="width:100px">Port</span><div class="input-wrap" id="mqtt-port-wrap"><input type="text" id="mqtt-port" value="8883"/></div></div>
+              <div class="text-sm-red hidden" id="mqtt-port-err" style="padding-left:124px"></div>
+              <div class="input-row"><span class="input-label" style="width:100px">Client ID</span><div class="input-wrap"><input type="text" id="mqtt-clientid" value="apex-gw-001"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:100px">Username</span><div class="input-wrap"><input type="text" id="mqtt-username" value=""/></div></div>
+              <div class="input-row"><span class="input-label" style="width:100px">Password</span><div class="input-wrap"><input type="password" id="mqtt-password" value=""/></div></div>
+              <div class="toggle-row" id="mqtt-tls-row">
+                <span class="toggle-row-label">TLS</span>
+                <div class="toggle-sm on" id="mqtt-tls-toggle"><div class="toggle-sm-knob"></div></div>
+              </div>
+              <!-- Cert uploads -->
+              <div class="input-row" id="mqtt-ca-row">
+                <span class="input-label" style="width:100px">CA Certificate</span>
+                <button class="cert-upload-btn" data-cert="ca">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload CA Certificate
+                </button>
+              </div>
+              <div class="input-row" id="mqtt-cert-row">
+                <span class="input-label" style="width:100px">Client Cert</span>
+                <button class="cert-upload-btn" data-cert="cert">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload Client Cert
+                </button>
+              </div>
+              <div class="input-row" id="mqtt-key-row">
+                <span class="input-label" style="width:100px">Client Key</span>
+                <button class="cert-upload-btn" data-cert="key">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload Client Key
+                </button>
+              </div>
+              <div class="input-row"><span class="input-label" style="width:100px">Publish Topic</span><div class="input-wrap"><input type="text" id="mqtt-publish" value="apex/data"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:100px">Subscribe Topic</span><div class="input-wrap"><input type="text" id="mqtt-subscribe" value="apex/cmd"/></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-btns">
+          <div class="form-btns-row">
+            <button class="btn-reset" id="mqtt-reset-btn">Reset to Default</button>
+            <button class="btn-save" id="mqtt-save-btn">Save Configuration</button>
+          </div>
+          <div class="save-banner hidden" id="mqtt-save-banner">Configuration saved successfully</div>
+        </div>
+      </div>
+
+      <!-- ── Modbus ─────────────────────────────────────────────────────────── -->
+      <div id="page-Modbus" class="page">
+        <div class="page-title">Modbus</div>
+
+        <!-- RTU Config -->
+        <div class="section">
+          <div class="section-header" data-section="modbus-rtu">
+            <span class="section-title">RTU Configuration</span>
+            <div class="section-header-right">
+              <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body open" id="modbus-rtu-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div class="subsection-label">RTU MASTER TIMING</div>
+              <div class="subsection-divider"></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Poll Interval (ms)</span><div class="input-wrap"><input type="text" value="1000"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Inter-Request Delay (ms)</span><div class="input-wrap"><input type="text" value="50"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Timeout (ms)</span><div class="input-wrap"><input type="text" value="500"/></div></div>
+              <div class="subsection-label mt-8">RTU COMMUNICATION</div>
+              <div class="subsection-divider"></div>
+              <div class="input-row">
+                <span class="input-label" style="width:160px">Baud Rate</span>
+                <div class="select-wrap"><select><option>9600</option><option>19200</option><option>38400</option><option>57600</option><option>115200</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+              </div>
+              <div class="input-row">
+                <span class="input-label" style="width:160px">Parity</span>
+                <div class="select-wrap"><select><option value="N">N (None)</option><option value="E">E (Even)</option><option value="O">O (Odd)</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+              </div>
+              <div class="input-row">
+                <span class="input-label" style="width:160px">Stop Bits</span>
+                <div class="select-wrap"><select><option value="1">1</option><option value="2">2</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+              </div>
+              <div class="subsection-label mt-8">PORT CONFIG</div>
+              <div class="subsection-divider"></div>
+              <div class="input-row"><span class="input-label" style="width:160px">RX Pin</span><div class="input-wrap"><input type="text" value="16"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">TX Pin</span><div class="input-wrap"><input type="text" value="17"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">RTS Pin</span><div class="input-wrap"><input type="text" value="4"/></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TCP Config -->
+        <div class="section">
+          <div class="section-header" data-section="modbus-tcp">
+            <span class="section-title">TCP Configuration</span>
+            <div class="section-header-right">
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body" id="modbus-tcp-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div class="subsection-label">TCP MASTER TIMING</div>
+              <div class="subsection-divider"></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Poll Interval (ms)</span><div class="input-wrap"><input type="text" value="1000"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Inter-Request Delay (ms)</span><div class="input-wrap"><input type="text" value="50"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Timeout (ms)</span><div class="input-wrap"><input type="text" value="500"/></div></div>
+              <div class="subsection-label mt-8">TCP COMMUNICATION</div>
+              <div class="subsection-divider"></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Port</span><div class="input-wrap" id="tcp-port-wrap"><input type="text" id="tcp-port" value="502"/></div></div>
+              <div class="text-sm-red hidden" id="tcp-port-err" style="padding-left:184px"></div>
+              <div class="input-row"><span class="input-label" style="width:160px">IP Address</span><div class="input-wrap"><input type="text" id="tcp-ip" value=""/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Connect Timeout (ms)</span><div class="input-wrap"><input type="text" value="3000"/></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slaves -->
+        <div class="section">
+          <div class="section-header" data-section="modbus-slaves">
+            <span class="section-title">Slaves</span>
+            <div class="section-header-right">
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body" id="modbus-slaves-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div class="slaves-wrap"><table class="slaves-table" id="slaves-table">
+                <thead><tr><th>Type</th><th>ID</th><th style="width:80px">IP</th><th>Tags</th><th>Actions</th></tr></thead>
+                <tbody id="slaves-tbody"></tbody>
+              </table></div>
+              <button class="btn-add-slave" id="add-slave-btn">Add Slave</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <div class="form-btns-row">
+            <button class="btn-reset" id="modbus-reset-btn">Reset to Default</button>
+            <button class="btn-save" id="modbus-save-btn">Save Configuration</button>
+          </div>
+          <div class="save-banner hidden" id="modbus-save-banner">Configuration saved successfully</div>
+        </div>
+      </div>
+
+      <!-- ── I/O ────────────────────────────────────────────────────────────── -->
+      <div id="page-IO" class="page">
+        <div class="page-title">I/O Configuration</div>
+
+        <!-- Analog Inputs -->
+        <div class="section">
+          <div class="section-header" data-section="io-analog">
+            <span class="section-title">Analog Inputs</span>
+            <div class="section-header-right">
+              <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body open" id="io-analog-body">
+            <div class="section-divider"></div>
+            <div class="io-table-wrap">
+              <table class="io-table" id="analog-table">
+                <thead><tr><th>Pin</th><th>Key</th><th>Slope</th><th>Offset</th><th>Invert</th><th>Cloud</th><th>Log</th></tr></thead>
+                <tbody id="analog-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Digital Output Config -->
+        <div class="section">
+          <div class="section-header" data-section="io-digital">
+            <span class="section-title">Digital Output - Configuration</span>
+            <div class="section-header-right">
+              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+            </div>
+          </div>
+          <div class="section-body" id="io-digital-body">
+            <div class="section-divider"></div>
+            <div class="io-table-wrap" style="min-width:unset">
+              <table class="io-table" id="digital-table" style="min-width:620px">
+                <thead><tr><th>Index</th><th>Alias</th><th>Pin</th><th>Default</th><th>Retain</th></tr></thead>
+                <tbody id="digital-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <div class="form-btns-row">
+            <button class="btn-reset" id="io-reset-btn">Reset to Default</button>
+            <button class="btn-save" id="io-save-btn">Save Configuration</button>
+          </div>
+          <div class="save-banner hidden" id="io-save-banner">Configuration saved successfully</div>
+        </div>
+      </div>
+
+      <!-- ── Data Logging ───────────────────────────────────────────────────── -->
+      <div id="page-DataLogging" class="page">
+        <div class="page-title">Data Logging</div>
+
+        <!-- Local Logging -->
+        <div class="section">
+          <div class="section-header" data-section="log-local">
+            <span class="section-title">Local Logging (SD Card)</span>
+            <div class="section-header-right"><svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body open" id="log-local-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="toggle-row"><span class="toggle-row-label">Enable Logging</span><div class="toggle-sm on" id="log-enable-toggle"><div class="toggle-sm-knob"></div></div></div>
+              <div class="category-label">Event Categories</div>
+              <div class="toggle-row" id="log-system-row"><span class="toggle-row-label">System</span><div class="toggle-sm on" id="log-system-toggle"><div class="toggle-sm-knob"></div></div></div>
+              <div class="toggle-row" id="log-network-row"><span class="toggle-row-label">Network</span><div class="toggle-sm on" id="log-network-toggle"><div class="toggle-sm-knob"></div></div></div>
+              <div class="toggle-row" id="log-modbus-row"><span class="toggle-row-label">Modbus Data</span><div class="toggle-sm on" id="log-modbus-toggle"><div class="toggle-sm-knob"></div></div></div>
+              <div class="toggle-row" id="log-io-row"><span class="toggle-row-label">I/O Data</span><div class="toggle-sm on" id="log-io-toggle"><div class="toggle-sm-knob"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Offline Sync -->
+        <div class="section">
+          <div class="section-header" data-section="log-sync">
+            <span class="section-title">Offline Sync</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="log-sync-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="toggle-row"><span class="toggle-row-label">Enable Sync</span><div class="toggle-sm on" id="sync-enable-toggle"><div class="toggle-sm-knob"></div></div></div>
+              <div class="input-row">
+                <span class="input-label" style="width:100px">Strategy</span>
+                <div class="select-wrap" id="sync-strategy-wrap">
+                  <select id="sync-strategy-select"><option value="MQTT">MQTT</option><option value="HTTP">HTTP</option></select>
+                  <svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <!-- MQTT topic (shown when MQTT) -->
+              <div class="input-row" id="sync-mqtt-row"><span class="input-label" style="width:100px">Topic</span><div class="input-wrap"><input type="text" id="sync-mqtt-topic" value="data/[DEVICE_ID]/history" placeholder="data/[DEVICE_ID]/history"/></div></div>
+              <!-- HTTP fields (hidden by default) -->
+              <div id="sync-http-rows" class="gap-12 hidden">
+                <div class="input-row"><span class="input-label" style="width:100px">Upload URL</span><div class="input-wrap"><input type="text" id="sync-http-url" placeholder="https://api.example.com/upload"/></div></div>
+                <div class="input-row"><span class="input-label" style="width:100px">Auth Header</span><div class="input-wrap"><input type="text" id="sync-http-auth" placeholder="Bearer <token>"/></div></div>
+              </div>
+              <div class="category-label">Sync Categories</div>
+              <div class="toggle-row" id="sync-modbus-row"><span class="toggle-row-label">Modbus Data</span><div class="toggle-sm on" id="sync-modbus-toggle"><div class="toggle-sm-knob"></div></div></div>
+              <div class="toggle-row" id="sync-io-row"><span class="toggle-row-label">I/O Data</span><div class="toggle-sm on" id="sync-io-toggle"><div class="toggle-sm-knob"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SD Card Status -->
+        <div class="section">
+          <div class="section-header" data-section="log-sd">
+            <span class="section-title">SD Card Status</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="log-sd-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="status-row"><span class="status-label">Card Detected</span><span class="status-value"><span class="status-indicator">●</span>Yes</span></div>
+              <div class="status-row"><span class="status-label">Total Space</span><span class="status-value">14.8 GB</span></div>
+              <div class="status-row"><span class="status-label">Used Space</span><span class="status-value">5.0 GB</span></div>
+              <div class="status-row"><span class="status-label">Free Space</span><span class="status-value">9.8 GB</span></div>
+              <div class="status-row"><span class="status-label">Filesystem Type</span><span class="status-value">FAT32</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="section">
+          <div class="section-header" data-section="log-viewer">
+            <span class="section-title">Logs</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="log-viewer-body">
+            <div class="section-divider"></div>
+            <div class="gap-12">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <span class="text-sm-gray-muted" id="log-count">15 entries</span>
+                <div style="display:flex;gap:12px;align-items:center">
+                  <button class="btn-danger-outline" id="log-clear-btn" style="height:32px;padding:0 14px;font-size:12px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    Clear
+                  </button>
+                  <button class="btn-primary" id="log-download-btn" style="height:32px;padding:0 14px;font-size:12px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Download Logs
+                  </button>
+                </div>
+              </div>
+              <div class="log-filter-row" id="log-filter-row">
+                <button class="log-filter-btn active" data-filter="all">All</button>
+                <button class="log-filter-btn" data-filter="system">System</button>
+                <button class="log-filter-btn" data-filter="network">Network</button>
+                <button class="log-filter-btn" data-filter="modbus">Modbus</button>
+                <button class="log-filter-btn" data-filter="io">I/O</button>
+              </div>
+              <div id="log-entries"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <div class="form-btns-row">
+            <button class="btn-reset" id="log-reset-btn">Reset to Default</button>
+            <button class="btn-save" id="log-save-btn">Save Configuration</button>
+          </div>
+          <div class="save-banner hidden" id="log-save-banner">Configuration saved successfully</div>
+        </div>
+      </div>
+
+      <!-- ── Firmware / System ──────────────────────────────────────────────── -->
+      <div id="page-Firmware" class="page">
+        <div class="page-title">System</div>
+
+        <!-- Firmware Info -->
+        <div class="section">
+          <div class="section-header" data-section="fw-info">
+            <span class="section-title">Firmware Info</span>
+            <div class="section-header-right"><svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body open" id="fw-info-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="info-row"><span class="info-label">Version</span><span class="info-value">v2.4.1</span></div>
+              <div class="info-row"><span class="info-label">Build Date</span><span class="info-value">2026-02-20</span></div>
+              <div class="info-row"><span class="info-label">Boot Reason</span><span class="info-value"><span class="info-accent">•</span>Normal</span></div>
+              <div class="info-row"><span class="info-label">Boot Partition</span><span class="info-value"><span class="info-accent">•</span>ota_0</span></div>
+              <div class="info-row"><span class="info-label">Uptime</span><span class="info-value">4d 12h 33m</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cloud OTA -->
+        <div class="section">
+          <div class="section-header" data-section="fw-ota">
+            <span class="section-title">Cloud OTA</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="fw-ota-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="input-row"><span class="input-label" style="width:100px">Firmware URL</span><div class="input-wrap"><input type="text" id="fw-url" value="http://ota.example.com/fw.bin" placeholder="http://ota.example.com/fw.bin"/></div></div>
+              <div class="text-sm-gray hidden" id="fw-ota-status"></div>
+              <div class="flex-wrap">
+                <button class="btn-secondary" id="fw-check-btn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Check &amp; Update
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Upload -->
+        <div class="section">
+          <div class="section-header" data-section="fw-manual">
+            <span class="section-title">Manual Upload</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="fw-manual-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <input type="file" id="fw-file-input" accept=".bin" class="hidden"/>
+              <div class="flex-wrap" style="align-items:center">
+                <button class="btn-secondary" id="fw-upload-btn">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload .bin
+                </button>
+                <span class="text-sm-gray-muted hidden" id="fw-file-name"></span>
+                <span class="text-sm-green hidden" id="fw-upload-done">Upload complete</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Actions -->
+        <div class="section">
+          <div class="section-header" data-section="fw-actions">
+            <span class="section-title">System Actions</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="fw-actions-body">
+            <div class="section-divider"></div>
+            <div class="flex-wrap">
+              <button class="btn-secondary" id="fw-reboot-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Reboot
+              </button>
+              <button class="btn-danger-outline" id="fw-factory-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Factory Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-btns">
+          <div class="form-btns-row">
+            <button class="btn-reset">Reset to Default</button>
+            <button class="btn-save" id="fw-save-btn">Save Configuration</button>
+          </div>
+          <div class="save-banner hidden" id="fw-save-banner">Configuration saved successfully</div>
+        </div>
+      </div>
+
+      <!-- ── Access Control ─────────────────────────────────────────────────── -->
+      <div id="page-AccessControl" class="page">
+        <div class="page-title">Access Control</div>
+
+        <!-- Change User ID -->
+        <div class="section">
+          <div class="section-header" data-section="ac-userid">
+            <span class="section-title">Change User ID</span>
+            <div class="section-header-right"><svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body open" id="ac-userid-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="input-row"><span class="input-label" style="width:130px">Current User ID</span><div class="input-wrap"><input type="text" id="ac-current-userid" value="ESP32-001" disabled style="color:#6b7280"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:130px">New User ID</span><div class="input-wrap"><input type="text" id="ac-new-userid" placeholder="Enter new user ID"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:130px">Password</span><div class="input-wrap"><input type="password" id="ac-userid-pw" placeholder="Enter password to confirm"/></div></div>
+              <div id="ac-userid-banner" class="banner hidden"></div>
+              <button class="btn-primary" id="ac-update-userid-btn" style="align-self:flex-start">Update User ID</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="section">
+          <div class="section-header" data-section="ac-pw">
+            <span class="section-title">Change Password</span>
+            <div class="section-header-right"><svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body open" id="ac-pw-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <div class="input-row"><span class="input-label" style="width:130px">Current Password</span><div class="input-wrap"><input type="password" id="ac-current-pw" placeholder="Enter current password"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:130px">New Password</span><div class="input-wrap"><input type="password" id="ac-new-pw" placeholder="Enter new password"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:130px">Confirm Password</span><div class="input-wrap"><input type="password" id="ac-confirm-pw" placeholder="Confirm new password"/></div></div>
+              <div id="ac-pw-banner" class="banner hidden"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <button class="btn-primary" id="ac-update-pw-btn">Update Password</button>
+                <button class="btn-danger-outline" id="ac-logout-btn" style="height:32px">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Config Backup ──────────────────────────────────────────────────── -->
+      <div id="page-ConfigBackup" class="page">
+        <div class="page-title">Configuration Backup</div>
+
+        <!-- Export -->
+        <div class="section">
+          <div class="section-header" data-section="cfg-export">
+            <span class="section-title">Export</span>
+            <div class="section-header-right"><svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body open" id="cfg-export-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <p class="text-sm-gray">Download the current device configurations as a JSON file.</p>
+              <div class="flex-wrap">
+                <button class="btn-secondary" id="cfg-export-btn">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Export Config
+                </button>
+              </div>
+              <div id="cfg-export-banner" class="banner hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Import -->
+        <div class="section">
+          <div class="section-header" data-section="cfg-import">
+            <span class="section-title">Import</span>
+            <div class="section-header-right"><svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+          </div>
+          <div class="section-body" id="cfg-import-body">
+            <div class="section-divider"></div>
+            <div class="gap-14">
+              <p class="text-sm-gray">Upload a configuration JSON file. The file will be validated before applying. The device will reboot after a successful import.</p>
+              <div class="flex-wrap" style="align-items:center">
+                <button class="btn-secondary" id="cfg-import-btn">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Import Config
+                </button>
+                <span class="text-sm-gray-muted hidden" id="cfg-import-filename"></span>
+              </div>
+              <input type="file" id="cfg-import-input" accept=".json,application/json" class="hidden"/>
+              <div id="cfg-import-banner" class="banner hidden"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #pages -->
+  </div><!-- end #main -->
+</div><!-- end #app -->
+
+<!-- ═══════════════════════ MODALS ═══════════════════════════════════════════ -->
+
+<!-- Reboot Confirm -->
+<div id="modal-reboot" class="modal-overlay">
+  <div class="modal modal-md">
+    <div class="modal-header"><span class="modal-title">Reboot Device</span></div>
+    <div class="modal-body">Are you sure you want to reboot the device? All active connections will be temporarily interrupted.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-reboot">Cancel</button>
+      <button class="btn-confirm" id="reboot-confirm-btn">Reboot</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cloud Status Panel -->
+<div id="modal-cloud" class="modal-overlay">
+  <div class="modal modal-md">
+    <div class="modal-header">
+      <span class="modal-title">Cloud Status</span>
+      <button class="modal-close" data-close="modal-cloud">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#a2a0a9">MQTT Broker</span><span style="font-size:12px;color:#f1f5f9"><span style="color:#16a34a">• </span>Connected</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#a2a0a9">Last Publish</span><span style="font-size:12px;color:#f1f5f9"><span style="color:#16a34a">• </span>2s ago</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#a2a0a9">Pending Sync</span><span style="font-size:12px;color:#f1f5f9"><span style="color:#16a34a">• </span>0 Records</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#a2a0a9">OTA Server</span><span style="font-size:12px;color:#f1f5f9"><span style="color:#16a34a">• </span>Reachable</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#a2a0a9">Data Uptime</span><span style="font-size:12px;color:#f1f5f9">4d 12h 33m</span></div>
+    </div>
+    <div class="modal-footer"><button class="btn-cancel" data-close="modal-cloud">Close</button></div>
+  </div>
+</div>
+
+<!-- WiFi Password Modal -->
+<div id="modal-wifi-pw" class="modal-overlay">
+  <div class="modal modal-sm">
+    <div class="modal-header"><span class="modal-title">Connect to WiFi</span></div>
+    <div class="modal-field">
+      <span class="modal-field-label">SSID</span>
+      <div class="modal-input-wrap"><input type="text" id="wifi-modal-ssid" disabled style="color:#6b7280;flex:1"/></div>
+    </div>
+    <div class="modal-field">
+      <span class="modal-field-label">Password</span>
+      <div class="modal-input-wrap" id="wifi-pw-wrap"><input type="password" id="wifi-modal-pw" placeholder="Enter WiFi password"/></div>
+      <span class="login-error hidden" id="wifi-pw-error">Password is required</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-wifi-pw">Cancel</button>
+      <button class="btn-confirm" id="wifi-connect-btn">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Slave Modal -->
+<div id="modal-add-slave" class="modal-overlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Add Slave</span>
+      <button class="modal-close" data-close="modal-add-slave">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div>
+      <div class="subsection-label">SLAVE CONFIGURATION</div>
+      <div class="subsection-divider" style="margin-top:4px"></div>
+      <div class="slave-cfg-row" id="add-slave-cfg-row">
+        <div class="slave-field">
+          <span class="slave-field-label">Type</span>
+          <div class="slave-field-input-wrap">
+            <select class="slave-field-select" id="add-slave-type">
+              <option value="RTU">RTU</option>
+              <option value="TCP">TCP</option>
+            </select>
+            <svg style="position:absolute;right:8px;pointer-events:none;transform:rotate(180deg)" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+          </div>
+        </div>
+        <div class="slave-field">
+          <span class="slave-field-label">Slave ID</span>
+          <div class="slave-field-input-wrap" id="add-slave-id-wrap">
+            <input type="number" class="slave-field-input" id="add-slave-id" placeholder=""/>
+          </div>
+          <span class="slave-field-error hidden" id="add-slave-id-err"></span>
+        </div>
+        <div class="slave-field hidden" id="add-slave-ip-field" style="min-width:160px">
+          <span class="slave-field-label">IP Address</span>
+          <div class="slave-field-input-wrap" id="add-slave-ip-wrap">
+            <input type="text" class="slave-field-input" id="add-slave-ip" placeholder="192.168.1.10"/>
+          </div>
+          <span class="slave-field-error hidden" id="add-slave-ip-err"></span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="subsection-label">TAG CONFIGURATION</div>
+      <div class="subsection-divider" style="margin-top:4px"></div>
+      <div class="tag-table-wrap">
+        <div class="tag-table-inner">
+          <div class="tag-cols" style="padding:0 4px;margin-bottom:8px">
+            <span class="tag-col-header">Address</span><span class="tag-col-header">Length</span>
+            <span class="tag-col-header">Data Type</span><span class="tag-col-header">Key</span>
+            <span class="tag-col-header">Cloud</span><span class="tag-col-header">Log Enabled</span>
+            <span class="tag-col-header"></span>
+          </div>
+          <div id="add-tag-rows"></div>
+          <p class="text-sm-gray" id="add-tag-empty">No tags configured. Click + Add Tag to add one.</p>
+          <button class="btn-secondary mt-8" id="add-tag-btn" style="height:32px">+ Add Tag</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-add-slave">Cancel</button>
+      <button class="btn-confirm" id="add-slave-confirm-btn">Add Slave</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Slave Modal -->
+<div id="modal-edit-slave" class="modal-overlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Edit Slave</span>
+      <button class="modal-close" data-close="modal-edit-slave">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div>
+      <div class="subsection-label">SLAVE CONFIGURATION</div>
+      <div class="subsection-divider" style="margin-top:4px"></div>
+      <div class="slave-cfg-row" id="edit-slave-cfg-row">
+        <div class="slave-field">
+          <span class="slave-field-label">Type</span>
+          <div class="slave-field-input-wrap"><input type="text" class="slave-field-input" id="edit-slave-type-display" disabled style="color:#6b7280"/></div>
+        </div>
+        <div class="slave-field">
+          <span class="slave-field-label">Slave ID</span>
+          <div class="slave-field-input-wrap"><input type="text" class="slave-field-input" id="edit-slave-id"/></div>
+        </div>
+        <div class="slave-field hidden" id="edit-slave-ip-field" style="min-width:160px">
+          <span class="slave-field-label">IP Address</span>
+          <div class="slave-field-input-wrap"><input type="text" class="slave-field-input" id="edit-slave-ip" placeholder="192.168.1.10"/></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="subsection-label">TAG CONFIGURATION</div>
+      <div class="subsection-divider" style="margin-top:4px"></div>
+      <div class="tag-table-wrap">
+        <div class="tag-table-inner">
+          <div class="tag-cols" style="padding:0 4px;margin-bottom:8px">
+            <span class="tag-col-header">Address</span><span class="tag-col-header">Length</span>
+            <span class="tag-col-header">Data Type</span><span class="tag-col-header">Key</span>
+            <span class="tag-col-header">Cloud</span><span class="tag-col-header">Log Enabled</span>
+            <span class="tag-col-header"></span>
+          </div>
+          <div id="edit-tag-rows"></div>
+          <p class="text-sm-gray" id="edit-tag-empty">No tags configured. Click + Add Tag to add one.</p>
+          <button class="btn-secondary mt-8" id="edit-tag-btn" style="height:32px">+ Add Tag</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-edit-slave">Cancel</button>
+      <button class="btn-confirm" id="edit-slave-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log Clear Confirm -->
+<div id="modal-clear-logs" class="modal-overlay">
+  <div class="modal modal-sm">
+    <div class="modal-header"><span class="modal-title">Clear Logs</span></div>
+    <div class="modal-body">All stored logs will be permanently deleted. This action cannot be undone.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-clear-logs">Cancel</button>
+      <button class="btn-confirm-danger" id="clear-logs-confirm-btn">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- FW Reboot Confirm -->
+<div id="modal-fw-reboot" class="modal-overlay">
+  <div class="modal modal-md">
+    <div class="modal-header"><span class="modal-title">Reboot Device</span></div>
+    <div class="modal-body">The device will restart. All active connections will be temporarily interrupted.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-fw-reboot">Cancel</button>
+      <button class="btn-confirm" data-close="modal-fw-reboot">Reboot</button>
+    </div>
+  </div>
+</div>
+
+<!-- Factory Reset Confirm -->
+<div id="modal-factory" class="modal-overlay">
+  <div class="modal modal-md">
+    <div class="modal-header"><span class="modal-title">Factory Reset</span></div>
+    <div class="modal-body">All configuration will be erased and the device will revert to factory defaults. This action cannot be undone.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-factory">Cancel</button>
+      <button class="btn-confirm-danger" data-close="modal-factory">Factory Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Logout Confirm -->
+<div id="modal-logout" class="modal-overlay">
+  <div class="modal modal-md">
+    <div class="modal-header"><span class="modal-title">Logout</span></div>
+    <div class="modal-body">You will be logged out of the current session. Any unsaved changes will be lost.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-logout">Cancel</button>
+      <button class="btn-confirm-danger" id="logout-confirm-btn">Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Confirm -->
+<div id="modal-reset" class="modal-overlay">
+  <div class="modal modal-md">
+    <div class="modal-header"><span class="modal-title">Reset to Default</span></div>
+    <div class="modal-body">All settings on this page will be reset to factory defaults. This action cannot be undone.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" data-close="modal-reset">Cancel</button>
+      <button class="btn-confirm" id="reset-confirm-btn">Reset</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ═══════════════════════ LOADER OVERLAY ═══════════════════════════════════ -->
+<!-- Shown/hidden via showLoader() and hideLoader() in js/app.js                -->
+<div id="loader-overlay">
+  <div class="loader-box">
+    <div class="loader-spinner"></div>
+    <span class="loader-label">Loading…</span>
+  </div>
+</div>
+
+<!-- ── JavaScript ──────────────────────────────────────────────────────────── -->
+<script src="app.js"></script>
+
+</body>
+</html>
