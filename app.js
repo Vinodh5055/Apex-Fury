@@ -77,14 +77,23 @@ const state = {
     ]},
   ],
 
+  // Data Acquisition timing state
+  dataAcquisition: {
+    timing: { pollInterval: 1000, requestDelay: 50, timeout: 500 }
+  },
+
   // I/O table data
   analogInputs: [
     { pin: 'AI-0', key: 'Pressure_1', slope: '1',    offset: '0',    invert: false, cloud: true, log: true },
     { pin: 'AI-1', key: 'pH_Level',   slope: '0.01', offset: '-0.5', invert: false, cloud: true, log: true },
   ],
   digitalConfigs: [
-    { index: '0', alias: 'Pump_Run',   pin: 'DO-0', defaultState: 'OFF', retain: true  },
-    { index: '1', alias: 'Alarm_Horn', pin: 'DO-1', defaultState: 'OFF', retain: false },
+    { index: '0', alias: 'Pump_Run',   pin: 'DO-0', defaultState: 'OFF', retain: true,  cloud: false, log: false },
+    { index: '1', alias: 'Alarm_Horn', pin: 'DO-1', defaultState: 'OFF', retain: false, cloud: false, log: false },
+  ],
+  digitalInputs: [
+    { index: 0, alias: 'DI_0', pin: 'DI-0', default_state: 0, invert: false, cloud: false, log_enabled: false },
+    { index: 1, alias: 'DI_1', pin: 'DI-1', default_state: 0, invert: false, cloud: false, log_enabled: false },
   ],
 
   // Slave editing scratch state
@@ -102,22 +111,23 @@ const state = {
 
 function generateLogs() {
   const now = Date.now();
+  const day  = 24 * 60 * 60 * 1000;
   return [
-    { id: 1,  timestamp: new Date(now -  0*60000).toISOString(), category: 'system',  message: 'Device boot completed' },
-    { id: 2,  timestamp: new Date(now -  1*60000).toISOString(), category: 'network', message: 'WiFi connected to FactoryWiFi-5G' },
-    { id: 3,  timestamp: new Date(now -  3*60000).toISOString(), category: 'modbus',  message: 'Slave 1 poll OK — 2 tags read' },
-    { id: 4,  timestamp: new Date(now -  5*60000).toISOString(), category: 'io',      message: 'DI0 rising edge detected' },
-    { id: 5,  timestamp: new Date(now -  7*60000).toISOString(), category: 'modbus',  message: 'Slave 2 timeout — retrying' },
-    { id: 6,  timestamp: new Date(now -  9*60000).toISOString(), category: 'system',  message: 'NTP sync successful' },
-    { id: 7,  timestamp: new Date(now - 12*60000).toISOString(), category: 'network', message: 'MQTT broker reconnected' },
-    { id: 8,  timestamp: new Date(now - 15*60000).toISOString(), category: 'io',      message: 'DO2 set HIGH by rule' },
-    { id: 9,  timestamp: new Date(now - 20*60000).toISOString(), category: 'modbus',  message: 'Slave 1 poll OK — 2 tags read' },
-    { id: 10, timestamp: new Date(now - 25*60000).toISOString(), category: 'system',  message: 'Config saved to flash' },
-    { id: 11, timestamp: new Date(now - 30*60000).toISOString(), category: 'network', message: '4G signal strength: -78 dBm' },
-    { id: 12, timestamp: new Date(now - 35*60000).toISOString(), category: 'modbus',  message: 'Slave 2 poll OK — 3 tags read' },
-    { id: 13, timestamp: new Date(now - 40*60000).toISOString(), category: 'io',      message: 'AI0 value: 3.72 V' },
-    { id: 14, timestamp: new Date(now - 45*60000).toISOString(), category: 'system',  message: 'Watchdog reset cleared' },
-    { id: 15, timestamp: new Date(now - 50*60000).toISOString(), category: 'network', message: 'HTTP sync uploaded 12 records' },
+    { id: 1,  timestamp: new Date(now -  0*60000).toISOString(),       category: 'system',  message: 'Device boot completed' },
+    { id: 2,  timestamp: new Date(now -  1*60000).toISOString(),       category: 'network', message: 'WiFi connected to FactoryWiFi-5G' },
+    { id: 3,  timestamp: new Date(now -  3*60000).toISOString(),       category: 'modbus',  message: 'Slave 1 poll OK — 2 tags read' },
+    { id: 4,  timestamp: new Date(now -  5*60000).toISOString(),       category: 'io',      message: 'DI0 rising edge detected' },
+    { id: 5,  timestamp: new Date(now -  7*60000).toISOString(),       category: 'modbus',  message: 'Slave 2 timeout — retrying' },
+    { id: 6,  timestamp: new Date(now - 1*day - 10*60000).toISOString(), category: 'system',  message: 'NTP sync successful' },
+    { id: 7,  timestamp: new Date(now - 1*day - 20*60000).toISOString(), category: 'network', message: 'MQTT broker reconnected' },
+    { id: 8,  timestamp: new Date(now - 1*day - 30*60000).toISOString(), category: 'io',      message: 'DO2 set HIGH by rule' },
+    { id: 9,  timestamp: new Date(now - 2*day -  5*60000).toISOString(), category: 'modbus',  message: 'Slave 1 poll OK — 2 tags read' },
+    { id: 10, timestamp: new Date(now - 2*day - 15*60000).toISOString(), category: 'system',  message: 'Config saved to flash' },
+    { id: 11, timestamp: new Date(now - 2*day - 25*60000).toISOString(), category: 'network', message: '4G signal strength: -78 dBm' },
+    { id: 12, timestamp: new Date(now - 3*day -  5*60000).toISOString(), category: 'modbus',  message: 'Slave 2 poll OK — 3 tags read' },
+    { id: 13, timestamp: new Date(now - 3*day - 15*60000).toISOString(), category: 'io',      message: 'AI0 value: 3.72 V' },
+    { id: 14, timestamp: new Date(now - 3*day - 25*60000).toISOString(), category: 'system',  message: 'Watchdog reset cleared' },
+    { id: 15, timestamp: new Date(now - 4*day -  5*60000).toISOString(), category: 'network', message: 'HTTP sync uploaded 12 records' },
   ];
 }
 
@@ -197,6 +207,7 @@ function bootApp() {
   renderSlavesTable();
   renderAnalogTable();
   renderDigitalTable();
+  renderDigitalInputTable();
   renderLogs();
 }
 
@@ -215,8 +226,7 @@ const menuItems = [
   { id: 'Dashboard', label: 'Dashboard', icon: '<path d="M13.2492 8.09153V4.40878C13.2492 4.14778 13.3361 3.93111 13.51 3.75878C13.6838 3.58628 13.8991 3.50003 14.156 3.50003H19.5965C19.8535 3.50003 20.0681 3.58628 20.2405 3.75878C20.413 3.93111 20.4992 4.14778 20.4992 4.40878V8.09153C20.4992 8.35236 20.4123 8.56895 20.2385 8.74128C20.0646 8.91378 19.8493 9.00003 19.5925 9.00003H14.152C13.895 9.00003 13.6803 8.91378 13.508 8.74128C13.3355 8.56895 13.2492 8.35236 13.2492 8.09153ZM3.49922 11.6V4.39978C3.49922 4.14478 3.58614 3.93111 3.75997 3.75878C3.9338 3.58628 4.14914 3.50003 4.40597 3.50003H9.84647C10.1035 3.50003 10.3181 3.58628 10.4905 3.75878C10.663 3.93128 10.7492 4.14503 10.7492 4.40003V11.6003C10.7492 11.8553 10.6623 12.0689 10.4885 12.2413C10.3146 12.4138 10.0993 12.5 9.84247 12.5H4.40197C4.14497 12.5 3.93031 12.4138 3.75797 12.2413C3.58547 12.0688 3.49922 11.855 3.49922 11.6ZM13.2492 19.6V12.3998C13.2492 12.1448 13.3361 11.9311 13.51 11.7588C13.6838 11.5863 13.8991 11.5 14.156 11.5H19.5965C19.8535 11.5 20.0681 11.5863 20.2405 11.7588C20.413 11.9313 20.4992 12.145 20.4992 12.4V19.6003C20.4992 19.8553 20.4123 20.0689 20.2385 20.2413C20.0646 20.4138 19.8493 20.5 19.5925 20.5H14.152C13.895 20.5 13.6803 20.4138 13.508 20.2413C13.3355 20.0688 13.2492 19.855 13.2492 19.6ZM3.49922 19.5913V15.9085C3.49922 15.6477 3.58614 15.4311 3.75997 15.2588C3.9338 15.0863 4.14914 15 4.40597 15H9.84647C10.1035 15 10.3181 15.0863 10.4905 15.2588C10.663 15.4311 10.7492 15.6477 10.7492 15.9085V19.5913C10.7492 19.8523 10.6623 20.0689 10.4885 20.2413C10.3146 20.4138 10.0993 20.5 9.84247 20.5H4.40197C4.14497 20.5 3.93031 20.4138 3.75797 20.2413C3.58547 20.0689 3.49922 19.8523 3.49922 19.5913ZM4.99922 11H9.24922V5.00003H4.99922V11ZM14.7492 19H18.9992V13H14.7492V19ZM14.7492 7.50003H18.9992V5.00003H14.7492V7.50003ZM4.99922 19H9.24922V16.5H4.99922V19Z" fill="#F1F5F9"/>' },
   { id: 'Network', label: 'Network', icon: '<path d="M8.125 21.2125C6.90833 20.6875 5.84583 19.9708 4.9375 19.0625C4.02917 18.1542 3.3125 17.0917 2.7875 15.875C2.2625 14.6583 2 13.3625 2 11.9875C2 10.6125 2.2625 9.32083 2.7875 8.1125C3.3125 6.90417 4.02917 5.84583 4.9375 4.9375C5.84583 4.02917 6.90833 3.3125 8.125 2.7875C9.34167 2.2625 10.6375 2 12.0125 2C13.3875 2 14.6792 2.2625 15.8875 2.7875C17.0958 3.3125 18.1542 4.02917 19.0625 4.9375C19.9708 5.84583 20.6875 6.90417 21.2125 8.1125C21.7375 9.32083 22 10.6125 22 11.9875C22 13.3625 21.7375 14.6583 21.2125 15.875C20.6875 17.0917 19.9708 18.1542 19.0625 19.0625C18.1542 19.9708 17.0958 20.6875 15.8875 21.2125C14.6792 21.7375 13.3875 22 12.0125 22C10.6375 22 9.34167 21.7375 8.125 21.2125ZM12 19.95C12.4333 19.35 12.8083 18.725 13.125 18.075C13.4417 17.425 13.7 16.7333 13.9 16H10.1C10.3 16.7333 10.5583 17.425 10.875 18.075C11.1917 18.725 11.5667 19.35 12 19.95ZM9.4 19.55C9.1 19 8.8375 18.4292 8.6125 17.8375C8.3875 17.2458 8.2 16.6333 8.05 16H5.1C5.58333 16.8333 6.1875 17.5583 6.9125 18.175C7.6375 18.7917 8.46667 19.25 9.4 19.55ZM14.6 19.55C15.5333 19.25 16.3625 18.7917 17.0875 18.175C17.8125 17.5583 18.4167 16.8333 18.9 16H15.95C15.8 16.6333 15.6125 17.2458 15.3875 17.8375C15.1625 18.4292 14.9 19 14.6 19.55ZM4.25 14H7.65C7.6 13.6667 7.5625 13.3375 7.5375 13.0125C7.5125 12.6875 7.5 12.35 7.5 12C7.5 11.65 7.5125 11.3125 7.5375 10.9875C7.5625 10.6625 7.6 10.3333 7.65 10H4.25C4.16667 10.3333 4.10417 10.6625 4.0625 10.9875C4.02083 11.3125 4 11.65 4 12C4 12.35 4.02083 12.6875 4.0625 13.0125C4.10417 13.3375 4.16667 13.6667 4.25 14ZM9.65 14H14.35C14.4 13.6667 14.4375 13.3375 14.4625 13.0125C14.4875 12.6875 14.5 12.35 14.5 12C14.5 11.65 14.4875 11.3125 14.4625 10.9875C14.4375 10.6625 14.4 10.3333 14.35 10H9.65C9.6 10.3333 9.5625 10.6625 9.5375 10.9875C9.5125 11.3125 9.5 11.65 9.5 12C9.5 12.35 9.5125 12.6875 9.5375 13.0125C9.5625 13.3375 9.6 13.6667 9.65 14ZM16.35 14H19.75C19.8333 13.6667 19.8958 13.3375 19.9375 13.0125C19.9792 12.6875 20 12.35 20 12C20 11.65 19.9792 11.3125 19.9375 10.9875C19.8958 10.6625 19.8333 10.3333 19.75 10H16.35C16.4 10.3333 16.4375 10.6625 16.4625 10.9875C16.4875 11.3125 16.5 11.65 16.5 12C16.5 12.35 16.4875 12.6875 16.4625 13.0125C16.4375 13.3375 16.4 13.6667 16.35 14ZM15.95 8H18.9C18.4167 7.16667 17.8125 6.44167 17.0875 5.825C16.3625 5.20833 15.5333 4.75 14.6 4.45C14.9 5 15.1625 5.57083 15.3875 6.1625C15.6125 6.75417 15.8 7.36667 15.95 8ZM10.1 8H13.9C13.7 7.26667 13.4417 6.575 13.125 5.925C12.8083 5.275 12.4333 4.65 12 4.05C11.5667 4.65 11.1917 5.275 10.875 5.925C10.5583 6.575 10.3 7.26667 10.1 8ZM5.1 8H8.05C8.2 7.36667 8.3875 6.75417 8.6125 6.1625C8.8375 5.57083 9.1 5 9.4 4.45C8.46667 4.75 7.6375 5.20833 6.9125 5.825C6.1875 6.44167 5.58333 7.16667 5.1 8Z" fill="#F1F5F9"/>' },
   { id: 'MQTT', label: 'MQTT', icon: '<path d="M6.5 20C4.98333 20 3.6875 19.475 2.6125 18.425C1.5375 17.375 1 16.0917 1 14.575C1 13.275 1.39167 12.1167 2.175 11.1C2.95833 10.0833 3.98333 9.43333 5.25 9.15C5.66667 7.61667 6.5 6.375 7.75 5.425C9 4.475 10.4167 4 12 4C13.95 4 15.6042 4.67917 16.9625 6.0375C18.3208 7.39583 19 9.05 19 11C20.15 11.1333 21.1042 11.6292 21.8625 12.4875C22.6208 13.3458 23 14.35 23 15.5C23 16.75 22.5625 17.8125 21.6875 18.6875C20.8125 19.5625 19.75 20 18.5 20H6.5ZM6.5 18H18.5C19.2 18 19.7917 17.7583 20.275 17.275C20.7583 16.7917 21 16.2 21 15.5C21 14.8 20.7583 14.2083 20.275 13.725C19.7917 13.2417 19.2 13 18.5 13H17V11C17 9.61667 16.5125 8.4375 15.5375 7.4625C14.5625 6.4875 13.3833 6 12 6C10.6167 6 9.4375 6.4875 8.4625 7.4625C7.4875 8.4375 7 9.61667 7 11H6.5C5.53333 11 4.70833 11.3417 4.025 12.025C3.34167 12.7083 3 13.5333 3 14.5C3 15.4667 3.34167 16.2917 4.025 16.975C4.70833 17.6583 5.53333 18 6.5 18Z" fill="#F1F5F9"/>' },
-  { id: 'Modbus', label: 'Modbus', icon: '<path d="M9 15V9H15V15H9ZM11 13H13V11H11V13ZM9 21V19H7C6.45 19 5.97917 18.8042 5.5875 18.4125C5.19583 18.0208 5 17.55 5 17V15H3V13H5V11H3V9H5V7C5 6.45 5.19583 5.97917 5.5875 5.5875C5.97917 5.19583 6.45 5 7 5H9V3H11V5H13V3H15V5H17C17.55 5 18.0208 5.19583 18.4125 5.5875C18.8042 5.97917 19 6.45 19 7V9H21V11H19V13H21V15H19V17C19 17.55 18.8042 18.0208 18.4125 18.4125C18.0208 18.8042 17.55 19 17 19H15V21H13V19H11V21H9ZM17 17V7H7V17H17Z" fill="#F1F5F9"/>' },
-  { id: 'IO', label: 'I/O', icon: '<path d="M11 17H13V15.95C13.75 15.7833 14.3958 15.4375 14.9375 14.9125C15.4792 14.3875 15.75 13.7167 15.75 12.9C15.75 12.2333 15.5458 11.6292 15.1375 11.0875C14.7292 10.5458 14.0833 10.1 13.2 9.75C12.5667 9.51667 12.1042 9.27917 11.8125 9.0375C11.5208 8.79583 11.375 8.5 11.375 8.15C11.375 7.81667 11.5083 7.5375 11.775 7.3125C12.0417 7.0875 12.4 6.975 12.85 6.975C13.2167 6.975 13.5208 7.07083 13.7625 7.2625C14.0042 7.45417 14.1917 7.7 14.325 8L16.125 7.25C15.925 6.75 15.6167 6.32917 15.2 5.9875C14.7833 5.64583 14.3167 5.425 13.8 5.325V4H12.2V5.3C11.45 5.46667 10.8583 5.8125 10.425 6.3375C9.99167 6.8625 9.775 7.45833 9.775 8.125C9.775 8.825 9.98333 9.40833 10.4 9.875C10.8167 10.3417 11.4833 10.7417 12.4 11.075C13.1 11.3417 13.5833 11.6083 13.85 11.875C14.1167 12.1417 14.25 12.4667 14.25 12.85C14.25 13.25 14.0958 13.5792 13.7875 13.8375C13.4792 14.0958 13.0833 14.225 12.6 14.225C12.1167 14.225 11.6875 14.0833 11.3125 13.8C10.9375 13.5167 10.6583 13.1167 10.475 12.6L8.6 13.35C8.81667 14.05 9.18333 14.6292 9.7 15.0875C10.2167 15.5458 10.8 15.8167 11.45 15.9V17H11ZM12 22C10.6167 22 9.31667 21.7375 8.1 21.2125C6.88333 20.6875 5.825 19.975 4.925 19.075C4.025 18.175 3.3125 17.1167 2.7875 15.9C2.2625 14.6833 2 13.3833 2 12C2 10.6167 2.2625 9.31667 2.7875 8.1C3.3125 6.88333 4.025 5.825 4.925 4.925C5.825 4.025 6.88333 3.3125 8.1 2.7875C9.31667 2.2625 10.6167 2 12 2C13.3833 2 14.6833 2.2625 15.9 2.7875C17.1167 3.3125 18.175 4.025 19.075 4.925C19.975 5.825 20.6875 6.88333 21.2125 8.1C21.7375 9.31667 22 10.6167 22 12C22 13.3833 21.7375 14.6833 21.2125 15.9C20.6875 17.1167 19.975 18.175 19.075 19.075C18.175 19.975 17.1167 20.6875 15.9 21.2125C14.6833 21.7375 13.3833 22 12 22ZM12 20C14.2333 20 16.125 19.225 17.675 17.675C19.225 16.125 20 14.2333 20 12C20 9.76667 19.225 7.875 17.675 6.325C16.125 4.775 14.2333 4 12 4C9.76667 4 7.875 4.775 6.325 6.325C4.775 7.875 4 9.76667 4 12C4 14.2333 4.775 16.125 6.325 17.675C7.875 19.225 9.76667 20 12 20Z" fill="#F1F5F9"/>' },
+  { id: 'Modbus', label: 'Data Acquisition', icon: '<path d="M9 15V9H15V15H9ZM11 13H13V11H11V13ZM9 21V19H7C6.45 19 5.97917 18.8042 5.5875 18.4125C5.19583 18.0208 5 17.55 5 17V15H3V13H5V11H3V9H5V7C5 6.45 5.19583 5.97917 5.5875 5.5875C5.97917 5.19583 6.45 5 7 5H9V3H11V5H13V3H15V5H17C17.55 5 18.0208 5.19583 18.4125 5.5875C18.8042 5.97917 19 6.45 19 7V9H21V11H19V13H21V15H19V17C19 17.55 18.8042 18.0208 18.4125 18.4125C18.0208 18.8042 17.55 19 17 19H15V21H13V19H11V21H9ZM17 17V7H7V17H17Z" fill="#F1F5F9"/>' },
   { id: 'DataLogging', label: 'Data Logging', icon: '<path d="M12 21C9.48333 21 7.35417 20.6125 5.6125 19.8375C3.87083 19.0625 3 18.1167 3 17V7C3 5.9 3.87917 4.95833 5.6375 4.175C7.39583 3.39167 9.51667 3 12 3C14.4833 3 16.6042 3.39167 18.3625 4.175C20.1208 4.95833 21 5.9 21 7V17C21 18.1167 20.1292 19.0625 18.3875 19.8375C16.6458 20.6125 14.5167 21 12 21ZM12 9.025C13.4833 9.025 14.975 8.8125 16.475 8.3875C17.975 7.9625 18.8167 7.50833 19 7.025C18.8167 6.54167 17.9792 6.08333 16.4875 5.65C14.9958 5.21667 13.5 5 12 5C10.4833 5 8.99583 5.2125 7.5375 5.6375C6.07917 6.0625 5.23333 6.525 5 7.025C5.23333 7.525 6.07917 7.98333 7.5375 8.4C8.99583 8.81667 10.4833 9.025 12 9.025ZM12 14C12.7 14 13.375 13.9667 14.025 13.9C14.675 13.8333 15.2958 13.7375 15.8875 13.6125C16.4792 13.4875 17.0375 13.3333 17.5625 13.15C18.0875 12.9667 18.5667 12.7583 19 12.525V9.525C18.5667 9.75833 18.0875 9.96667 17.5625 10.15C17.0375 10.3333 16.4792 10.4875 15.8875 10.6125C15.2958 10.7375 14.675 10.8333 14.025 10.9C13.375 10.9667 12.7 11 12 11C11.3 11 10.6167 10.9667 9.95 10.9C9.28333 10.8333 8.65417 10.7375 8.0625 10.6125C7.47083 10.4875 6.91667 10.3333 6.4 10.15C5.88333 9.96667 5.41667 9.75833 5 9.525V12.525C5.41667 12.7583 5.88333 12.9667 6.4 13.15C6.91667 13.3333 7.47083 13.4875 8.0625 13.6125C8.65417 13.7375 9.28333 13.8333 9.95 13.9C10.6167 13.9667 11.3 14 12 14ZM12 19C12.7667 19 13.5458 18.9417 14.3375 18.825C15.1292 18.7083 15.8583 18.5542 16.525 18.3625C17.1917 18.1708 17.75 17.9542 18.2 17.7125C18.65 17.4708 18.9167 17.225 19 16.975V14.525C18.5667 14.7583 18.0875 14.9667 17.5625 15.15C17.0375 15.3333 16.4792 15.4875 15.8875 15.6125C15.2958 15.7375 14.675 15.8333 14.025 15.9C13.375 15.9667 12.7 16 12 16C11.3 16 10.6167 15.9667 9.95 15.9C9.28333 15.8333 8.65417 15.7375 8.0625 15.6125C7.47083 15.4875 6.91667 15.3333 6.4 15.15C5.88333 14.9667 5.41667 14.7583 5 14.525V17C5.08333 17.25 5.34583 17.4917 5.7875 17.725C6.22917 17.9583 6.78333 18.1708 7.45 18.3625C8.11667 18.5542 8.85 18.7083 9.65 18.825C10.45 18.9417 11.2333 19 12 19Z" fill="#F1F5F9"/>' },
   { id: 'Firmware', label: 'System', icon: '<path d="M12 16L7 11L8.4 9.55L11 12.15V4H13V12.15L15.6 9.55L17 11L12 16ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z" fill="#F1F5F9"/>' },
   { id: 'AccessControl', label: 'Access Control', icon: '<path d="M6 22C5.45 22 4.97917 21.8042 4.5875 21.4125C4.19583 21.0208 4 20.55 4 20V10C4 9.45 4.19583 8.97917 4.5875 8.5875C4.97917 8.19583 5.45 8 6 8H7V6C7 4.61667 7.4875 3.4375 8.4625 2.4625C9.4375 1.4875 10.6167 1 12 1C13.3833 1 14.5625 1.4875 15.5375 2.4625C16.5125 3.4375 17 4.61667 17 6V8H18C18.55 8 19.0208 8.19583 19.4125 8.5875C19.8042 8.97917 20 9.45 20 10V20C20 20.55 19.8042 21.0208 19.4125 21.4125C19.0208 21.8042 18.55 22 18 22H6ZM6 20H18V10H6V20ZM13.4125 16.4125C13.8042 16.0208 14 15.55 14 15C14 14.45 13.8042 13.9792 13.4125 13.5875C13.0208 13.1958 12.55 13 12 13C11.45 13 10.9792 13.1958 10.5875 13.5875C10.1958 13.9792 10 14.45 10 15C10 15.55 10.1958 16.0208 10.5875 16.4125C10.9792 16.8042 11.45 17 12 17C12.55 17 13.0208 16.8042 13.4125 16.4125ZM9 8H15V6C15 5.16667 14.7083 4.45833 14.125 3.875C13.5417 3.29167 12.8333 3 12 3C11.1667 3 10.4583 3.29167 9.875 3.875C9.29167 4.45833 9 5.16667 9 6V8Z" fill="#F1F5F9"/>' },
@@ -456,18 +466,23 @@ setupFormButtons('modbus-reset-btn', 'modbus-save-btn', 'modbus-save-banner', ()
   renderSlavesTable();
 }, null);
 
-// I/O page
+// I/O page (now embedded in Data Acquisition page)
 setupFormButtons('io-reset-btn', 'io-save-btn', 'io-save-banner', () => {
   state.analogInputs  = [
     { pin: 'AI-0', key: 'Pressure_1', slope: '1',    offset: '0',    invert: false, cloud: true, log: true },
     { pin: 'AI-1', key: 'pH_Level',   slope: '0.01', offset: '-0.5', invert: false, cloud: true, log: true },
   ];
   state.digitalConfigs = [
-    { index: '0', alias: 'Pump_Run',   pin: 'DO-0', defaultState: 'OFF', retain: true  },
-    { index: '1', alias: 'Alarm_Horn', pin: 'DO-1', defaultState: 'OFF', retain: false },
+    { index: '0', alias: 'Pump_Run',   pin: 'DO-0', defaultState: 'OFF', retain: true,  cloud: false, log: false },
+    { index: '1', alias: 'Alarm_Horn', pin: 'DO-1', defaultState: 'OFF', retain: false, cloud: false, log: false },
+  ];
+  state.digitalInputs = [
+    { index: 0, alias: 'DI_0', pin: 'DI-0', default_state: 0, invert: false, cloud: false, log_enabled: false },
+    { index: 1, alias: 'DI_1', pin: 'DI-1', default_state: 0, invert: false, cloud: false, log_enabled: false },
   ];
   renderAnalogTable();
   renderDigitalTable();
+  renderDigitalInputTable();
 }, null);
 
 // Data Logging page
@@ -817,6 +832,19 @@ document.querySelectorAll('.cert-upload-btn').forEach(btn => {
 
 //             slaves table rendering, and Add/Edit Slave modals with tag rows.
 
+// ── Timing Config Bindings ────────────────────────────────────────────────────
+// Sync the shared Timing Config inputs to state.dataAcquisition.timing
+
+document.getElementById('da-poll-interval').addEventListener('input', function() {
+  state.dataAcquisition.timing.pollInterval = parseInt(this.value) || 0;
+});
+document.getElementById('da-request-delay').addEventListener('input', function() {
+  state.dataAcquisition.timing.requestDelay = parseInt(this.value) || 0;
+});
+document.getElementById('da-timeout').addEventListener('input', function() {
+  state.dataAcquisition.timing.timeout = parseInt(this.value) || 0;
+});
+
 // ── TCP Port Validation ───────────────────────────────────────────────────────
 // Validates the TCP port field on every keystroke.
 
@@ -1078,7 +1106,7 @@ document.getElementById('edit-slave-save-btn').addEventListener('click', () => {
 // Key field is an inline text input; Invert/Cloud/Log are mini toggles.
 
 function renderAnalogTable() {
-  const tbody = document.getElementById('analog-tbody');
+  const tbody = document.getElementById('da-analog-tbody');
   tbody.innerHTML = '';
 
   state.analogInputs.forEach((inp, i) => {
@@ -1113,7 +1141,7 @@ function renderAnalogTable() {
 // Alias field is an inline text input; Default State is a dropdown; Retain is a mini toggle.
 
 function renderDigitalTable() {
-  const tbody = document.getElementById('digital-tbody');
+  const tbody = document.getElementById('da-digital-tbody');
   tbody.innerHTML = '';
 
   state.digitalConfigs.forEach((cfg, i) => {
@@ -1134,7 +1162,9 @@ function renderDigitalTable() {
           </svg>
         </div>
       </td>
-      <td><div class="toggle-mini ${cfg.retain ? 'on' : ''}" data-di="${i}" data-field="retain"><div class="toggle-mini-knob"></div></div></td>`;
+      <td><div class="toggle-mini ${cfg.retain ? 'on' : ''}" data-di="${i}" data-field="retain"><div class="toggle-mini-knob"></div></div></td>
+      <td><div class="toggle-mini ${cfg.cloud  ? 'on' : ''}" data-di="${i}" data-field="cloud" ><div class="toggle-mini-knob"></div></div></td>
+      <td><div class="toggle-mini ${cfg.log    ? 'on' : ''}" data-di="${i}" data-field="log"   ><div class="toggle-mini-knob"></div></div></td>`;
     tbody.appendChild(tr);
 
     // Sync inline Alias input to state
@@ -1147,10 +1177,62 @@ function renderDigitalTable() {
       state.digitalConfigs[this.dataset.di].defaultState = this.value;
     });
 
-    // Sync Retain toggle to state
-    tr.querySelector('.toggle-mini').addEventListener('click', function() {
-      this.classList.toggle('on');
-      state.digitalConfigs[this.dataset.di].retain = this.classList.contains('on');
+    // Sync all toggles to state
+    tr.querySelectorAll('.toggle-mini').forEach(t => {
+      t.addEventListener('click', function() {
+        this.classList.toggle('on');
+        state.digitalConfigs[this.dataset.di][this.dataset.field] = this.classList.contains('on');
+      });
+    });
+  });
+}
+
+// ── Digital Input (DI) Table ──────────────────────────────────────────────────
+// Renders state.digitalInputs into an editable HTML table.
+
+function renderDigitalInputTable() {
+  const tbody = document.getElementById('da-di-tbody');
+  tbody.innerHTML = '';
+
+  state.digitalInputs.forEach((di, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${di.index}</td>
+      <td><input class="io-inline-input" value="${di.alias}" data-dii="${i}" data-field="alias"/></td>
+      <td>${di.pin}</td>
+      <td>
+        <div class="io-select-wrap" style="position:relative">
+          <select data-dii="${i}" data-field="default_state">
+            <option value="0" ${di.default_state === 0 ? 'selected' : ''}>LOW</option>
+            <option value="1" ${di.default_state === 1 ? 'selected' : ''}>HIGH</option>
+          </select>
+          <svg style="position:absolute;right:6px;top:50%;transform:translateY(-50%) rotate(180deg);pointer-events:none"
+               width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/>
+          </svg>
+        </div>
+      </td>
+      <td><div class="toggle-mini ${di.invert      ? 'on' : ''}" data-dii="${i}" data-field="invert"     ><div class="toggle-mini-knob"></div></div></td>
+      <td><div class="toggle-mini ${di.cloud       ? 'on' : ''}" data-dii="${i}" data-field="cloud"      ><div class="toggle-mini-knob"></div></div></td>
+      <td><div class="toggle-mini ${di.log_enabled ? 'on' : ''}" data-dii="${i}" data-field="log_enabled"><div class="toggle-mini-knob"></div></div></td>`;
+    tbody.appendChild(tr);
+
+    // Sync inline Alias input to state
+    tr.querySelector('.io-inline-input').addEventListener('input', function() {
+      state.digitalInputs[this.dataset.dii].alias = this.value;
+    });
+
+    // Sync Default State dropdown to state
+    tr.querySelector('select').addEventListener('change', function() {
+      state.digitalInputs[this.dataset.dii].default_state = parseInt(this.value);
+    });
+
+    // Sync all toggles to state
+    tr.querySelectorAll('.toggle-mini').forEach(t => {
+      t.addEventListener('click', function() {
+        this.classList.toggle('on');
+        state.digitalInputs[this.dataset.dii][this.dataset.field] = this.classList.contains('on');
+      });
     });
   });
 }
@@ -1215,69 +1297,34 @@ function updateSyncStrategy() {
 
 // ── Log Viewer ────────────────────────────────────────────────────────────────
 
-// Clear logs button — opens a confirmation modal
-document.getElementById('log-clear-btn').addEventListener('click', () => openModal('modal-clear-logs'));
-
-document.getElementById('clear-logs-confirm-btn').addEventListener('click', () => {
-  state.logs = [];
-  renderLogs();
-  closeModal('modal-clear-logs');
-});
-
-// Download logs as a JSON file
-document.getElementById('log-download-btn').addEventListener('click', () => {
-  const data = state.logs.map(l => ({
-    timestamp: l.timestamp,
-    category:  l.category,
-    message:   l.message,
-  }));
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'esp32_logs.json';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-// Category filter buttons
-document.querySelectorAll('.log-filter-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    state.logFilter = this.dataset.filter;
-    renderLogs();
-  });
-});
-
 // ── Log Renderer ──────────────────────────────────────────────────────────────
 
 /**
- * Re-render the log viewer list based on the current filter and state.logs.
- * Also updates the entry count and disables action buttons when empty.
+ * Re-render the log viewer showing only unique dates that contain logs.
  */
 function renderLogs() {
-  const container = document.getElementById('log-entries');
-  const filtered  = state.logFilter === 'all'
-    ? state.logs
-    : state.logs.filter(l => l.category === state.logFilter);
-  const count = state.logs.length;
+  const container = document.getElementById('log-date-list');
+  if (!container) return;
 
-  document.getElementById('log-count').textContent = `${count} ${count === 1 ? 'entry' : 'entries'}`;
-  document.getElementById('log-clear-btn').disabled    = count === 0;
-  document.getElementById('log-download-btn').disabled = count === 0;
+  // Collect unique dates (YYYY-MM-DD) from all logs
+  const uniqueDates = [...new Set(
+    state.logs.map(l => l.timestamp.slice(0, 10))
+  )].sort((a, b) => b.localeCompare(a)); // newest first
 
   container.innerHTML = '';
-  filtered.forEach(log => {
+
+  if (uniqueDates.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'text-sm-gray';
+    empty.textContent = 'No log entries available.';
+    container.appendChild(empty);
+    return;
+  }
+
+  uniqueDates.forEach(date => {
     const div = document.createElement('div');
     div.className = 'log-row';
-    const ts      = new Date(log.timestamp);
-    const timeStr = ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const catLabels = { system: 'System', network: 'Network', modbus: 'Modbus', io: 'I/O' };
-    div.innerHTML = `
-      <span class="log-time">${timeStr}</span>
-      <span class="log-badge ${log.category}">${catLabels[log.category]}</span>
-      <span class="log-message">${log.message}</span>`;
+    div.innerHTML = `<span class="log-message">${date}</span>`;
     container.appendChild(div);
   });
 }
@@ -1388,35 +1435,6 @@ document.getElementById('fw-factory-btn').addEventListener('click', () => openMo
 // ═════════════════════════════════════════════════════════════════════════════
 // ACCESS CONTROL PAGE
 // ═════════════════════════════════════════════════════════════════════════════
-
-// ── Change User ID ────────────────────────────────────────────────────────────
-// Requires password confirmation; checks against the current stored password.
-
-document.getElementById('ac-update-userid-btn').addEventListener('click', () => {
-  const newId  = document.getElementById('ac-new-userid').value.trim();
-  const pw     = document.getElementById('ac-userid-pw').value;
-  const banner = document.getElementById('ac-userid-banner');
-
-  if (!newId) {
-    setBanner(banner, 'New User ID cannot be empty.', 'error');
-    return;
-  }
-  if (!pw) {
-    setBanner(banner, 'Password is required to confirm this change.', 'error');
-    return;
-  }
-  if (pw !== 'admin') {
-    // In production this check is done server-side on the ESP32
-    setBanner(banner, 'Incorrect password. User ID not updated.', 'error');
-    return;
-  }
-
-  // Update the displayed current User ID and clear the form
-  document.getElementById('ac-current-userid').value = newId;
-  document.getElementById('ac-new-userid').value     = '';
-  document.getElementById('ac-userid-pw').value      = '';
-  setBanner(banner, 'User ID updated successfully.', 'success');
-});
 
 // ── Change Password ───────────────────────────────────────────────────────────
 // Validates minimum length and that new password matches confirmation.
