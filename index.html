@@ -382,143 +382,185 @@
         </div>
       </div>
 
-      <!-- ── Modbus ─────────────────────────────────────────────────────────── -->
+      <!-- ── Data Acquisition (Modbus + I/O) ──────────────────────────────── -->
       <div id="page-Modbus" class="page">
-        <div class="page-title">Modbus</div>
+        <div class="page-title">Data Acquisition</div>
 
-        <!-- RTU Config -->
+        <!-- A. Timing Config (NEW) -->
         <div class="section">
-          <div class="section-header" data-section="modbus-rtu">
-            <span class="section-title">RTU Configuration</span>
+          <div class="section-header" data-section="da-timing">
+            <span class="section-title">Timing Config</span>
             <div class="section-header-right">
               <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
             </div>
           </div>
-          <div class="section-body open" id="modbus-rtu-body">
+          <div class="section-body open" id="da-timing-body">
             <div class="section-divider"></div>
             <div class="gap-12">
-              <div class="subsection-label">RTU MASTER TIMING</div>
-              <div class="subsection-divider"></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Poll Interval (ms)</span><div class="input-wrap"><input type="text" value="1000"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Inter-Request Delay (ms)</span><div class="input-wrap"><input type="text" value="50"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Timeout (ms)</span><div class="input-wrap"><input type="text" value="500"/></div></div>
-              <div class="subsection-label mt-8">RTU COMMUNICATION</div>
-              <div class="subsection-divider"></div>
-              <div class="input-row">
-                <span class="input-label" style="width:160px">Baud Rate</span>
-                <div class="select-wrap"><select><option>9600</option><option>19200</option><option>38400</option><option>57600</option><option>115200</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
-              </div>
-              <div class="input-row">
-                <span class="input-label" style="width:160px">Parity</span>
-                <div class="select-wrap"><select><option value="N">N (None)</option><option value="E">E (Even)</option><option value="O">O (Odd)</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
-              </div>
-              <div class="input-row">
-                <span class="input-label" style="width:160px">Stop Bits</span>
-                <div class="select-wrap"><select><option value="1">1</option><option value="2">2</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
-              </div>
-              <div class="subsection-label mt-8">PORT CONFIG</div>
-              <div class="subsection-divider"></div>
-              <div class="input-row"><span class="input-label" style="width:160px">RX Pin</span><div class="input-wrap"><input type="text" value="16"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">TX Pin</span><div class="input-wrap"><input type="text" value="17"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">RTS Pin</span><div class="input-wrap"><input type="text" value="4"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Poll Interval (ms)</span><div class="input-wrap"><input type="text" id="da-poll-interval" value="1000"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Inter-Request Delay (ms)</span><div class="input-wrap"><input type="text" id="da-request-delay" value="50"/></div></div>
+              <div class="input-row"><span class="input-label" style="width:160px">Timeout (ms)</span><div class="input-wrap"><input type="text" id="da-timeout" value="500"/></div></div>
             </div>
           </div>
         </div>
 
-        <!-- TCP Config -->
+        <!-- B. Modbus Config -->
         <div class="section">
-          <div class="section-header" data-section="modbus-tcp">
-            <span class="section-title">TCP Configuration</span>
-            <div class="section-header-right">
-              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
-            </div>
-          </div>
-          <div class="section-body" id="modbus-tcp-body">
-            <div class="section-divider"></div>
-            <div class="gap-12">
-              <div class="subsection-label">TCP MASTER TIMING</div>
-              <div class="subsection-divider"></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Poll Interval (ms)</span><div class="input-wrap"><input type="text" value="1000"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Inter-Request Delay (ms)</span><div class="input-wrap"><input type="text" value="50"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Timeout (ms)</span><div class="input-wrap"><input type="text" value="500"/></div></div>
-              <div class="subsection-label mt-8">TCP COMMUNICATION</div>
-              <div class="subsection-divider"></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Port</span><div class="input-wrap" id="tcp-port-wrap"><input type="text" id="tcp-port" value="502"/></div></div>
-              <div class="text-sm-red hidden" id="tcp-port-err" style="padding-left:184px"></div>
-              <div class="input-row"><span class="input-label" style="width:160px">IP Address</span><div class="input-wrap"><input type="text" id="tcp-ip" value=""/></div></div>
-              <div class="input-row"><span class="input-label" style="width:160px">Connect Timeout (ms)</span><div class="input-wrap"><input type="text" value="3000"/></div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Slaves -->
-        <div class="section">
-          <div class="section-header" data-section="modbus-slaves">
-            <span class="section-title">Slaves</span>
-            <div class="section-header-right">
-              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
-            </div>
-          </div>
-          <div class="section-body" id="modbus-slaves-body">
-            <div class="section-divider"></div>
-            <div class="gap-12">
-              <div class="slaves-wrap"><table class="slaves-table" id="slaves-table">
-                <thead><tr><th>Type</th><th>ID</th><th style="width:80px">IP</th><th>Tags</th><th>Actions</th></tr></thead>
-                <tbody id="slaves-tbody"></tbody>
-              </table></div>
-              <button class="btn-add-slave" id="add-slave-btn">Add Slave</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-btns">
-          <div class="form-btns-row">
-            <button class="btn-reset" id="modbus-reset-btn">Reset to Default</button>
-            <button class="btn-save" id="modbus-save-btn">Save Configuration</button>
-          </div>
-          <div class="save-banner hidden" id="modbus-save-banner">Configuration saved successfully</div>
-        </div>
-      </div>
-
-      <!-- ── I/O ────────────────────────────────────────────────────────────── -->
-      <div id="page-IO" class="page">
-        <div class="page-title">I/O Configuration</div>
-
-        <!-- Analog Inputs -->
-        <div class="section">
-          <div class="section-header" data-section="io-analog">
-            <span class="section-title">Analog Inputs</span>
+          <div class="section-header" data-section="da-modbus-cfg">
+            <span class="section-title">Modbus Config</span>
             <div class="section-header-right">
               <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
             </div>
           </div>
-          <div class="section-body open" id="io-analog-body">
+          <div class="section-body open" id="da-modbus-cfg-body">
             <div class="section-divider"></div>
-            <div class="io-table-wrap">
-              <table class="io-table" id="analog-table">
-                <thead><tr><th>Pin</th><th>Key</th><th>Slope</th><th>Offset</th><th>Invert</th><th>Cloud</th><th>Log</th></tr></thead>
-                <tbody id="analog-tbody"></tbody>
-              </table>
+
+            <!-- RTU Config -->
+            <div class="section">
+              <div class="section-header" data-section="modbus-rtu">
+                <span class="section-title">RTU Configuration</span>
+                <div class="section-header-right">
+                  <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <div class="section-body open" id="modbus-rtu-body">
+                <div class="section-divider"></div>
+                <div class="gap-12">
+                  <div class="subsection-label">RTU COMMUNICATION</div>
+                  <div class="subsection-divider"></div>
+                  <div class="input-row">
+                    <span class="input-label" style="width:160px">Baud Rate</span>
+                    <div class="select-wrap"><select><option>9600</option><option>19200</option><option>38400</option><option>57600</option><option>115200</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+                  </div>
+                  <div class="input-row">
+                    <span class="input-label" style="width:160px">Parity</span>
+                    <div class="select-wrap"><select><option value="N">N (None)</option><option value="E">E (Even)</option><option value="O">O (Odd)</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+                  </div>
+                  <div class="input-row">
+                    <span class="input-label" style="width:160px">Stop Bits</span>
+                    <div class="select-wrap"><select><option value="1">1</option><option value="2">2</option></select><svg class="select-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
+                  </div>
+                  <div class="subsection-label mt-8">PORT CONFIG</div>
+                  <div class="subsection-divider"></div>
+                  <div class="input-row"><span class="input-label" style="width:160px">RX Pin</span><div class="input-wrap"><input type="text" value="16"/></div></div>
+                  <div class="input-row"><span class="input-label" style="width:160px">TX Pin</span><div class="input-wrap"><input type="text" value="17"/></div></div>
+                  <div class="input-row"><span class="input-label" style="width:160px">RTS Pin</span><div class="input-wrap"><input type="text" value="4"/></div></div>
+                </div>
+              </div>
             </div>
+
+            <!-- TCP Config -->
+            <div class="section">
+              <div class="section-header" data-section="modbus-tcp">
+                <span class="section-title">TCP Configuration</span>
+                <div class="section-header-right">
+                  <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <div class="section-body" id="modbus-tcp-body">
+                <div class="section-divider"></div>
+                <div class="gap-12">
+                  <div class="subsection-label">TCP COMMUNICATION</div>
+                  <div class="subsection-divider"></div>
+                  <div class="input-row"><span class="input-label" style="width:160px">Port</span><div class="input-wrap" id="tcp-port-wrap"><input type="text" id="tcp-port" value="502"/></div></div>
+                  <div class="text-sm-red hidden" id="tcp-port-err" style="padding-left:184px"></div>
+                  <div class="input-row"><span class="input-label" style="width:160px">IP Address</span><div class="input-wrap"><input type="text" id="tcp-ip" value=""/></div></div>
+                  <div class="input-row"><span class="input-label" style="width:160px">Connect Timeout (ms)</span><div class="input-wrap"><input type="text" value="3000"/></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slaves -->
+            <div class="section">
+              <div class="section-header" data-section="modbus-slaves">
+                <span class="section-title">Slaves</span>
+                <div class="section-header-right">
+                  <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <div class="section-body" id="modbus-slaves-body">
+                <div class="section-divider"></div>
+                <div class="gap-12">
+                  <div class="slaves-wrap"><table class="slaves-table" id="slaves-table">
+                    <thead><tr><th>Type</th><th>ID</th><th style="width:80px">IP</th><th>Tags</th><th>Actions</th></tr></thead>
+                    <tbody id="slaves-tbody"></tbody>
+                  </table></div>
+                  <button class="btn-add-slave" id="add-slave-btn">Add Slave</button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- Digital Output Config -->
+        <!-- C. I/O Config -->
         <div class="section">
-          <div class="section-header" data-section="io-digital">
-            <span class="section-title">Digital Output - Configuration</span>
+          <div class="section-header" data-section="da-io-cfg">
+            <span class="section-title">I/O Config</span>
             <div class="section-header-right">
-              <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+              <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
             </div>
           </div>
-          <div class="section-body" id="io-digital-body">
+          <div class="section-body open" id="da-io-cfg-body">
             <div class="section-divider"></div>
-            <div class="io-table-wrap" style="min-width:unset">
-              <table class="io-table" id="digital-table" style="min-width:620px">
-                <thead><tr><th>Index</th><th>Alias</th><th>Pin</th><th>Default</th><th>Retain</th></tr></thead>
-                <tbody id="digital-tbody"></tbody>
-              </table>
+
+            <!-- Analog Inputs -->
+            <div class="section">
+              <div class="section-header" data-section="da-io-analog">
+                <span class="section-title">Analog Inputs</span>
+                <div class="section-header-right">
+                  <svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <div class="section-body open" id="da-io-analog-body">
+                <div class="section-divider"></div>
+                <div class="io-table-wrap">
+                  <table class="io-table" id="da-analog-table">
+                    <thead><tr><th>Pin</th><th>Key</th><th>Slope</th><th>Offset</th><th>Invert</th><th>Cloud</th><th>Log</th></tr></thead>
+                    <tbody id="da-analog-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
             </div>
+
+            <!-- Digital Output Config -->
+            <div class="section">
+              <div class="section-header" data-section="da-io-digital">
+                <span class="section-title">Digital Output - Configuration</span>
+                <div class="section-header-right">
+                  <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <div class="section-body" id="da-io-digital-body">
+                <div class="section-divider"></div>
+                <div class="io-table-wrap" style="min-width:unset">
+                  <table class="io-table" id="da-digital-table" style="min-width:760px">
+                    <thead><tr><th>Index</th><th>Alias</th><th>Pin</th><th>Default</th><th>Retain</th><th>Cloud</th><th>Log</th></tr></thead>
+                    <tbody id="da-digital-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Digital Input (DI) -->
+            <div class="section">
+              <div class="section-header" data-section="da-io-di">
+                <span class="section-title">Digital Input (DI)</span>
+                <div class="section-header-right">
+                  <svg class="section-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg>
+                </div>
+              </div>
+              <div class="section-body" id="da-io-di-body">
+                <div class="section-divider"></div>
+                <div class="io-table-wrap" style="min-width:unset">
+                  <table class="io-table" id="da-di-table" style="min-width:760px">
+                    <thead><tr><th>Index</th><th>Alias</th><th>Pin</th><th>Default State</th><th>Invert</th><th>Cloud</th><th>Log</th></tr></thead>
+                    <tbody id="da-di-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -612,27 +654,7 @@
           <div class="section-body" id="log-viewer-body">
             <div class="section-divider"></div>
             <div class="gap-12">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-                <span class="text-sm-gray-muted" id="log-count">15 entries</span>
-                <div style="display:flex;gap:12px;align-items:center">
-                  <button class="btn-danger-outline" id="log-clear-btn" style="height:32px;padding:0 14px;font-size:12px">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                    Clear
-                  </button>
-                  <button class="btn-primary" id="log-download-btn" style="height:32px;padding:0 14px;font-size:12px">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Download Logs
-                  </button>
-                </div>
-              </div>
-              <div class="log-filter-row" id="log-filter-row">
-                <button class="log-filter-btn active" data-filter="all">All</button>
-                <button class="log-filter-btn" data-filter="system">System</button>
-                <button class="log-filter-btn" data-filter="network">Network</button>
-                <button class="log-filter-btn" data-filter="modbus">Modbus</button>
-                <button class="log-filter-btn" data-filter="io">I/O</button>
-              </div>
-              <div id="log-entries"></div>
+              <div id="log-date-list"></div>
             </div>
           </div>
         </div>
@@ -661,7 +683,6 @@
             <div class="gap-14">
               <div class="info-row"><span class="info-label">Version</span><span class="info-value">v2.4.1</span></div>
               <div class="info-row"><span class="info-label">Build Date</span><span class="info-value">2026-02-20</span></div>
-              <div class="info-row"><span class="info-label">Boot Reason</span><span class="info-value"><span class="info-accent">•</span>Normal</span></div>
               <div class="info-row"><span class="info-label">Boot Partition</span><span class="info-value"><span class="info-accent">•</span>ota_0</span></div>
               <div class="info-row"><span class="info-label">Uptime</span><span class="info-value">4d 12h 33m</span></div>
             </div>
@@ -744,24 +765,6 @@
       <!-- ── Access Control ─────────────────────────────────────────────────── -->
       <div id="page-AccessControl" class="page">
         <div class="page-title">Access Control</div>
-
-        <!-- Change User ID -->
-        <div class="section">
-          <div class="section-header" data-section="ac-userid">
-            <span class="section-title">Change User ID</span>
-            <div class="section-header-right"><svg class="section-chevron open" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.37 8L11.27 12.9a.74.74 0 010 1.05.74.74 0 01-1.05 0L4.95 8.95A1.5 1.5 0 014.55 8c0-.18.03-.34.1-.5.07-.17.17-.32.3-.45l5.13-5.13a.74.74 0 011.05 0 .74.74 0 010 1.05L6.37 8z" fill="#A2A0A9"/></svg></div>
-          </div>
-          <div class="section-body open" id="ac-userid-body">
-            <div class="section-divider"></div>
-            <div class="gap-14">
-              <div class="input-row"><span class="input-label" style="width:130px">Current User ID</span><div class="input-wrap"><input type="text" id="ac-current-userid" value="ESP32-001" disabled style="color:#6b7280"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:130px">New User ID</span><div class="input-wrap"><input type="text" id="ac-new-userid" placeholder="Enter new user ID"/></div></div>
-              <div class="input-row"><span class="input-label" style="width:130px">Password</span><div class="input-wrap"><input type="password" id="ac-userid-pw" placeholder="Enter password to confirm"/></div></div>
-              <div id="ac-userid-banner" class="banner hidden"></div>
-              <button class="btn-primary" id="ac-update-userid-btn" style="align-self:flex-start">Update User ID</button>
-            </div>
-          </div>
-        </div>
 
         <!-- Change Password -->
         <div class="section">
